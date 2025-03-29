@@ -5,16 +5,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simon Game</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@latest/dist/full.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 
 <body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen">
     <div class="text-center mb-4">
         <h1 class="text-2xl font-bold">Simon Game</h1>
         <p class="text-gray-600">Repeat the sequence to win!</p>
-        <button onclick="startGame()" class="btn btn-info mt-2">Start Game</button>
+        <button onclick="startGame()" class="btn btn-secondary mt-2">Start Game</button>
         <p class="mt-2 text-lg font-semibold" id="status">Press Start</p>
+        <label class="block mt-2">Difficulty:
+            <select id="difficulty" class="select select-bordered">
+                <option value="800">Easy</option>
+                <option value="600">Medium</option>
+                <option value="400">Hard</option>
+            </select>
+        </label>
     </div>
 
     <div class="grid grid-cols-2 gap-2 w-40 h-40">
@@ -24,20 +31,30 @@
         <div id="blue" class="w-20 h-20 bg-blue-500 rounded-lg cursor-pointer" onclick="playerMove('blue')"></div>
     </div>
 
+    <audio id="greenSound" src="button-click-289742.mp3"></audio>
+    <audio id="redSound" src="button-click-289742.mp3"></audio>
+    <audio id="yellowSound" src="button-click-289742.mp3"></audio>
+    <audio id="blueSound" src="button-click-289742.mp3"></audio>
+    <audio id="gameOverSound" src="button-click-289742.mp3"></audio>
+
     <script>
         let sequence = [];
         let playerSequence = [];
         let colors = ["green", "red", "yellow", "blue"];
         let level = 0;
+        let difficulty = 800;
+        let isPlayerTurn = false;
 
         function startGame() {
             sequence = [];
             playerSequence = [];
             level = 0;
+            difficulty = document.getElementById("difficulty").value;
             nextRound();
         }
 
         function nextRound() {
+            isPlayerTurn = false;
             playerSequence = [];
             level++;
             document.getElementById("status").innerText = `Level ${level}`;
@@ -53,22 +70,29 @@
                     i++;
                 } else {
                     clearInterval(interval);
+                    isPlayerTurn = true;
                 }
-            }, 800);
+            }, difficulty);
         }
 
         function flashButton(color) {
             const button = document.getElementById(color);
+            const sound = document.getElementById(color + "Sound");
             button.classList.add("opacity-50");
+            sound.play();
             setTimeout(() => button.classList.remove("opacity-50"), 400);
         }
 
         function playerMove(color) {
+            if (!isPlayerTurn) return;
+
             playerSequence.push(color);
             flashButton(color);
 
             if (playerSequence[playerSequence.length - 1] !== sequence[playerSequence.length - 1]) {
                 document.getElementById("status").innerText = "Game Over! Press Start";
+                document.getElementById("gameOverSound").play();
+                isPlayerTurn = false;
                 return;
             }
 
